@@ -303,7 +303,7 @@
   </section>
 
   <script>
-    const DEFAULT_TERM = "casaxmore";
+    const ARTIST_ID = "448012278";
     const DEFAULT_LANG = "es";
     const SELLER_NAME = "jose manuel casabona martin";
 
@@ -406,17 +406,20 @@
       if (tag) tag.setAttribute("content", content);
     }
 
-    async function fetchApps(term) {
+    async function fetchApps() {
       grid.innerHTML = `<div class="loading">${i18n[currentLang].loading}</div>`;
       try {
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=software&country=us&limit=50`;
+        const url = `https://itunes.apple.com/lookup?id=${ARTIST_ID}&entity=software&country=us&limit=200`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("No se pudo consultar el App Store");
         const data = await res.json();
 
-        const filtered = (data.results || []).filter(app =>
-          (app.sellerName || "").toLowerCase() === SELLER_NAME
-        );
+        const filtered = (data.results || [])
+          .filter(app =>
+            app.wrapperType === "software" &&
+            (app.sellerName || "").toLowerCase() === SELLER_NAME
+          )
+          .sort((a, b) => new Date(b.releaseDate || 0) - new Date(a.releaseDate || 0));
 
         renderApps(filtered);
       } catch (err) {
@@ -494,7 +497,7 @@
     }
 
     setLanguage(DEFAULT_LANG);
-    fetchApps(DEFAULT_TERM);
+    fetchApps();
   </script>
 </body>
 </html>
